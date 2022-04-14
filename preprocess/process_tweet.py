@@ -1,22 +1,138 @@
 import pandas as pd
 import numpy as np
 import os
+import re
 import argparse
 import math
-import tqdm
+from tqdm import tqdm
+from emoji import demojize
 from multiprocessing import Process
-from langdetect import detect, detect_langs, DetectorFactory
+from langdetect import detect, detect_langs, DetectorFactory, lang_detect_exception
 
 
 drop_col = ['lat', 'long', 'likes', 'retweets', 'replies', 'quote_count']
 fill_col = {'original_tweet_id': 0}
+url_re = re.compile(r'https?://[-\./\w]+')
 
-def clean(_tweets_fs):
+mention_re = re.compile(r'(?<=@)[-_A-Za-z0-9]+')  # @
+rm_mention_re = re.compile(r'(RT )?@[-_A-Za-z0-9]+:?')
+
+hashtag_re = re.compile(r'#[-_A-Za-z0-9]+')
+
+
+def de_emoji(string):
+    if string is np.nan:
+        return string
+    else:
+        try:
+            return demojize(string)
+        except TypeError:
+            return string
+
+
+def find_url(string):
+    try:
+        return url_re.findall(string)
+    except TypeError:
+        return []
+
+
+def rm_url(string):
+    try:
+        return url_re.sub('', string)
+    except TypeError:
+        return string
+
+
+def find_mention(string):
+    try:
+        return mention_re.findall(string)
+    except TypeError:
+        return []
+
+
+def rm_mention(string):
+    try:
+        return rm_mention_re.sub('', string)
+    except TypeError:
+        return string
+
+
+def mentions2list(string):
+    if string is np.nan:
+        return []
+    else:
+        return string.split(';')
+
+
+def find_hashtag(string):
+    try:
+        return hashtag_re.findall(string)
+    except TypeError:
+        return []
+
+
+def rm_hashtag(string):
+    try:
+        return hashtag_re.sub('', string)
+    except TypeError:
+        return string
+
+
+def detect_language(string):
+    try:
+        return detect(string)
+    except:
+        return np.nan
+
+
+def text_handle(df):
+    """
+    de-emoji, find and remove url, remove non-English text, find and remove mentioned users
+    for both 'text' and 'quoted_text'
+    """
+
+    tqdm.pandas(desc='pandas bar')
+
+    # handle url
+    df['text'] = df['text'].progress_map(de_emoji)
+    df['quoted_text'] = df['quoted_text'].map(de_emoji)
+    df['url'] = df['text'].progress_map(find_url)
+    df['text'] = df['text'].progress_map(rm_url)
+    df['quoted_url'] = df['quoted_text'].progress_map(find_url)
+    df['quoted_text'] = df['quoted_text'].progress_map(rm_url)
+
+    # handle mention
+    df['mentions'] = df['mentions'].progress_map(mentions2list)
+    df['mentions'] += df['text'].progress_map(find_mention)
+    df['text'] = df['text'].progress_map(rm_mention)
+    df['mentions'] += df['quoted_text'].progress_map(find_mention)
+    df['quoted_text'] = df['quoted_text'].progress_map(rm_mention)
+    df['mentions'] = df['mentions'].progress_map(lambda x: set(x))
+
+    # hashtag
+    df['hashtag'] = df['text'].progress_map(find_hashtag)
+    df['text'] = df['text'].progress_map(rm_hashtag)
+    df['hashtag'] += df['quoted_text'].progress_map(find_hashtag)
+    df['quoted_text'] = df['quoted_text'].progress_map(rm_hashtag)
+    df['hashtag'] = df['hashtag'].progress_map(lambda x: set(x))
+
+    # remove non-English
+
+    df['lang'] = df['text'].progress_map(detect_language)
+    df.drop(df[df['lang'] != 'en'].index, inplace=True)
+    print(len(df.index))
+
+
+def clean(_tweets_fs, save_path, tid):
+    print(tid, _tweets_fs)
     for tweets_f in _tweets_fs:
         df = pd.read_csv(tweets_f, on_bad_lines='skip')
         df.drop(drop_col, axis=1, inplace=True)
-        df.fillna(value=fill_col)
-        pass
+        df.fillna(value=fill_col, inplace=True)
+        df['original_tweet_id'] = pd.to_numeric(df['original_tweet_id'], downcast='integer')  # float64 to int64
+        text_handle(df)
+        df.to_csv(os.path.join(save_path, os.path.basename(tweets_f)))
 
 
 if __name__ == '__main__':
@@ -31,6 +147,7 @@ if __name__ == '__main__':
     save_path = args.save_path
     tweets_dir = args.tweets_dir
     num_threads = args.num_threads
+    os.makedirs(save_path, exist_ok=True)
     tweets_fs = []
     for root, _, files in os.walk(tweets_dir):
         for file in files:
@@ -39,11 +156,13 @@ if __name__ == '__main__':
     num_csv_per_thread = math.ceil(len(tweets_fs)/num_threads)
     for i in range(num_threads):
         if i == num_threads-1:
-            thread_handle.append(Process(target=clean, args=(tweets_fs[i*num_csv_per_thread:],)))
+            thread_handle.append(Process(target=clean, args=(tweets_fs[i*num_csv_per_thread:], save_path, i, )))
         else:
-            thread_handle.append(Process(target=clean, args=(tweets_fs[i*num_csv_per_thread:(i+1)*num_csv_per_thread],)))
+            thread_handle.append(Process(target=clean, args=(tweets_fs[i*num_csv_per_thread:(i+1)*num_csv_per_thread], save_path, i, )))
+        print('Thread %d is starting' % i)
         thread_handle[i].start()
     for i in range(num_threads):
+        print('Thread %d is running' % i)
         thread_handle[i].join()
 
 
