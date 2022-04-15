@@ -153,12 +153,16 @@ if __name__ == '__main__':
         for file in files:
             tweets_fs.append(os.path.join(root, file))
     thread_handle = []
-    num_csv_per_thread = math.ceil(len(tweets_fs)/num_threads)
+    base = len(tweets_fs)//num_threads
+    remain = len(tweets_fs) % num_threads
+    start = 0
     for i in range(num_threads):
-        if i == num_threads-1:
-            thread_handle.append(Process(target=clean, args=(tweets_fs[i*num_csv_per_thread:], save_path, i, )))
+        if i < remain:
+            num_csv_per_thread = base + 1
         else:
-            thread_handle.append(Process(target=clean, args=(tweets_fs[i*num_csv_per_thread:(i+1)*num_csv_per_thread], save_path, i, )))
+            num_csv_per_thread = base
+        thread_handle.append(Process(target=clean, args=(tweets_fs[start:start+num_csv_per_thread], save_path, i, )))
+        start += num_csv_per_thread
         print('Thread %d is starting' % i)
         thread_handle[i].start()
     for i in range(num_threads):
