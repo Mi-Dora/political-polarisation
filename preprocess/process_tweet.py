@@ -94,9 +94,11 @@ def text_handle(df):
 
     tqdm.pandas(desc='pandas bar')
 
-    # handle url
+    # handle emoji
     df['text'] = df['text'].progress_map(de_emoji)
     df['quoted_text'] = df['quoted_text'].map(de_emoji)
+
+    # handle url
     df['url'] = df['text'].progress_map(find_url)
     df['text'] = df['text'].progress_map(rm_url)
     df['quoted_url'] = df['quoted_text'].progress_map(find_url)
@@ -139,9 +141,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--tweets_dir', type=str, default='../data/tweets/',
                         help='Path to load tweet dataset')
-    parser.add_argument('--save_path', type=str, default='../data_cleaned/',
+    parser.add_argument('--save_path', type=str, default='../data_cleaned/tweets',
                         help='Path to save the cleaned dataset')
-    parser.add_argument('--num_threads', type=int, default=8,
+    parser.add_argument('--num_threads', type=int, default=4,
                         help='Numb er of thread using for downloading.')
     args = parser.parse_args()
     save_path = args.save_path
@@ -150,7 +152,7 @@ if __name__ == '__main__':
     os.makedirs(save_path, exist_ok=True)
     tweets_fs = []
     for root, _, files in os.walk(tweets_dir):
-        for file in files:
+        for file in sorted(files):
             tweets_fs.append(os.path.join(root, file))
     thread_handle = []
     base = len(tweets_fs)//num_threads
