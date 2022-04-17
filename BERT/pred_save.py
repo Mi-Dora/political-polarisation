@@ -26,6 +26,7 @@ def save(pred_biden, pred_trump, file):
     df.to_csv(base_url+filename)
 
 def predict(files, device):
+    max_len = 128
     pretrained_LM_path_biden = "kornosk/bert-election2020-twitter-stance-biden-KE-MLM"
     tokenizer_biden = AutoTokenizer.from_pretrained(pretrained_LM_path_biden)
     model_biden = AutoModelForSequenceClassification.from_pretrained(pretrained_LM_path_biden).to(device)
@@ -38,11 +39,11 @@ def predict(files, device):
         sentences = pd.read_csv(file)['text'].tolist()
         sentences = [s.lower() for s in sentences]
 
-        inputs = tokenizer_biden(sentences, return_tensors="pt").to(device)
+        inputs = tokenizer_biden(sentences, return_tensors="pt",padding='max_length',truncation=True,max_length=max_len).to(device)
         outputs = model_biden(**inputs).get('logits')
         pred_biden = torch.softmax(outputs, dim=1).detach().cpu().tolist()
 
-        inputs = tokenizer_trump(sentences, return_tensors="pt").to(device)
+        inputs = tokenizer_trump(sentences, return_tensors="pt",padding='max_length',truncation=True,max_length=max_len).to(device)
         outputs = model_trump(**inputs).get('logits')
         pred_trump = torch.softmax(outputs, dim=1).detach().cpu().tolist()
 
