@@ -1,5 +1,5 @@
 import pandas as pd
 
-sentences = pd.read_pickle('./data_cleaned/tweets/out_3143.pkl')
+sentences = pd.read_csv('./data_cleaned/tweets/out_3143.csv')
 
-print(sentences.head())
+print(sentences['text'].tolist()[:2])
