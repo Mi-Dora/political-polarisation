@@ -10,7 +10,7 @@ from multiprocessing import Process
 from langdetect import detect, detect_langs, DetectorFactory, lang_detect_exception
 
 
-df = pd.read_csv('../data_cleaned/out_3143.csv')
+df = pd.read_pickle('../data_cleaned/tweets/out_3143.pkl')
 pass
 
 

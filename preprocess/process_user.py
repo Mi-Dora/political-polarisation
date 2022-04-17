@@ -53,6 +53,8 @@ def text_handle(df):
 def df_preproc(fpath):
     csv_f = csv.reader(open(fpath))
     header = csv_f.__next__()
+    if len(header) < 24:
+        return None, None
     header = list(map(lambda x: x.strip(), header))
     rows = []
     for line in csv_f:
@@ -69,10 +71,12 @@ def df_preproc(fpath):
 def clean(_users_fs, save_path):
     for users_f in _users_fs:
         header, rows = df_preproc(users_f)
+        if header is None:
+            continue
         df = pd.DataFrame(rows, columns=header, dtype=int)
         df.drop(drop_col, axis=1, inplace=True)
         text_handle(df)
-        df.to_csv(os.path.join(save_path, os.path.basename(users_f)))
+        df.to_pkl(os.path.join(save_path, os.path.basename(users_f).split('.')[0]+'pkl'))
 
 
 if __name__ == '__main__':
@@ -91,6 +95,8 @@ if __name__ == '__main__':
     users_fs = []
     for root, _, files in os.walk(users_dir):
         for file in sorted(files):
+            if file[0] == '.':
+                continue
             users_fs.append(os.path.join(root, file))
     # for users_f in users_fs:
     #     clean([users_f], save_path, 0)
