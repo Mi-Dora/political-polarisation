@@ -47,7 +47,7 @@ def save(pred_biden, pred_trump, file):
 
 def predict(files, device):
     max_len = 128
-    batch_size=1024
+    batch_size=128
 
     pretrained_LM_path_biden = "kornosk/bert-election2020-twitter-stance-biden-KE-MLM"
     tokenizer_biden = AutoTokenizer.from_pretrained(pretrained_LM_path_biden)
