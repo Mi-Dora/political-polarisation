@@ -134,7 +134,7 @@ def clean(_tweets_fs, save_path, tid):
         df.fillna(value=fill_col, inplace=True)
         df['original_tweet_id'] = pd.to_numeric(df['original_tweet_id'], downcast='integer')  # float64 to int64
         text_handle(df)
-        df.to_csv(os.path.join(save_path, os.path.basename(tweets_f)))
+        df.to_pickle(os.path.join(save_path, os.path.basename(tweets_f).split('.')[0]+'.pkl'))
 
 
 if __name__ == '__main__':
