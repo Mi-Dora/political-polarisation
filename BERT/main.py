@@ -7,6 +7,7 @@ import argparse
 import torch
 import towards_biden
 import towards_trump
+import os
 
 def save(biden_result, trump_result):
     # TODO save the result
@@ -18,9 +19,17 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Add models\' arguments')
     parser.add_argument('--tw', default='both', 
                     help='towards which person, t->trump, b->biden, default->both')
+    parser.add_argument('--paths', default='all', help='paths')
+    parser.add_argument('--url', default='../data_cleaned/tweets/', help='base url')
     args = parser.parse_args()
 
-    paths = []
+    base_url = args.url
+    if args.paths == 'all':
+        for root,dirs,files in os.walk(base_url):
+            paths = files
+    else :
+        paths = args.paths.split(',')
+        paths = [base_url+'out_'+path+'pkl' for path in paths]
 
     if args.type == 'b':
         towards_biden.predict(paths, device)
