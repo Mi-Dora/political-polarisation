@@ -11,7 +11,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Add models\' arguments')
     parser.add_argument('--paths', default='all', help='paths')
-    parser.add_argument('--url', default='./data_cleaned/tweets/', help='base url')
+    parser.add_argument('--url', default='./data_cleaned/tweets/hash/', help='base url')
     args = parser.parse_args()
     files = []
     base_url = args.url
