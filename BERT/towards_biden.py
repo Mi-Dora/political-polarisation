@@ -21,9 +21,12 @@ id2label = {
 
 sentence = 'This pandemic has shown us clearly the vulgarity of our healthcare system. Highest costs in the world, yet not enough nurses or doctors. Many millions uninsured, while insurance company profits soar. The struggle continues. Healthcare is a human right. Medicare for all.'
 inputs = tokenizer(sentence.lower(), return_tensors="pt")
+print('inputs: ', inputs)
 outputs = model(**inputs)
+print('outputs: ', outputs)
 predicted_probability = torch.softmax(outputs[0], dim=1)[0].tolist()
+print('predicted_probability: ', predicted_probability)
 
-classifier = pipeline('sentiment-analysis', model=pretrained_LM_path, tokenizer=pretrained_LM_path)
+classifier = pipeline('sentiment-analysis', model=model, tokenizer=tokenizer)
 result = classifier(sentence)
 print('result', result)
