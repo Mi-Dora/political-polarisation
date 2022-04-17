@@ -1,38 +1,32 @@
-import os
-import numpy as np
-import pandas as pd
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report
-from transformers import BertForSequenceClassification, AutoModel, AutoTokenizer, BertTokenizer, BertForMaskedLM, AdamW, Trainer, TrainingArguments
-from datasets import Dataset
-from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
-from sklearn.metrics import accuracy_score, precision_recall_fscore_support
+from sklearn.metrics import classification_report, confusion_matrix, ConfusionMatrixDisplay, accuracy_score, precision_recall_fscore_support
 import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
-import logging
 import argparse
 import torch
-import torch.nn as nn
+import towards_biden
+import towards_trump
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2,3"
-
+def save(biden_result, trump_result):
+    # TODO save the result
+    return
 
 if __name__ == '__main__':
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
     parser = argparse.ArgumentParser(description='Add models\' arguments')
-    parser.add_argument('--type', default='bt',
-                    help='use different pretrained model to train and test')
-    parser.add_argument('--qid', default='1')
-    parser.add_argument('--ep', default='10', help='number of epochs')
+    parser.add_argument('--tw', default='both', 
+                    help='towards which person, t->trump, b->biden, default->both')
     args = parser.parse_args()
 
-    if args.type == 'bt':
-        model_name = 'bert-base-uncased'
-    elif args.type == 'rb':
-        model_name = 'roberta-base'
-    elif args.type == 'simbt':
-        model_name = "princeton-nlp/sup-simcse-bert-base-uncased"
-    elif args.type == 'simrb':
-        model_name = "princeton-nlp/sup-simcse-roberta-base"
-    else :
-        model_name = args.type
+    paths = []
+
+    if args.type == 'b':
+        towards_biden.predict(paths, device)
+    elif args.type == 't':
+        towards_trump.predict(paths, device)
+    elif args.type == 'both':
+        biden_result = towards_biden.predict(paths, device)
+        trump_result = towards_trump.predict(paths, device)
+        save(biden_result, trump_result)
