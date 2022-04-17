@@ -1,6 +1,7 @@
 import os
 import matplotlib.pyplot as plt
 import pandas as pd
+import networkx as nx
 from IPython.core.display import display
 from wordcloud import WordCloud, STOPWORDS
 
@@ -23,10 +24,6 @@ vote_word_set = {'VOTE', 'vote', 'Vote', 'ElectionDay', 'Election2020', 'electio
 def trim_hashtag(df):
     df['hashtag'] = df['hashtag'].astype("string")
     df_name = df['hashtag']
-    df_name = df_name.dropna(how='all')
-    df_name = df_name.map(
-        lambda x: x.replace('\'', '').replace('{', '').replace('}', '').replace('set()', '').replace(' ', '').replace(
-            '#', ''))
     df_name = df_name.str.split(',', expand=True)
     df_name = df_name.stack()
     # 重置索引，并删除多于的索引
@@ -52,11 +49,51 @@ def trim_hashtag(df):
     plt.show()
 
 
+def clean_list(x):
+    return x.replace('\'', '').replace('{', '').replace('}', '').replace('set()', '').replace(' ', '').replace('#', '').strip()
+
+
+def build_mention_graph(df):
+    count = 0
+    dg = nx.Graph()
+    for _, row in df.iterrows():
+        username = row['user']
+        mention_list = row['mentions'].strip().split(',')
+        for mention in mention_list:
+            dg.add_edge(username, mention.strip())
+            count += 1
+        if count > 1000000:
+            break
+        elif count % 1000 == 0:
+            print(count)
+    options = {
+        'node_color': 'black',
+        'node_size': 0.2,
+        'width': 0.01,
+    }
+    largest_component = max(nx.connected_components(dg), key=len)
+    largest_component_graph = dg.subgraph(largest_component)
+    print(nx.number_of_nodes(largest_component_graph))
+    communities = nx.community.label_propagation_communities(largest_component_graph)
+    communities = sorted(communities, key=lambda i: len(i), reverse=True)
+    for community in communities[10:]:
+        for item in community:
+            dg.remove_node(item)
+    nx.draw(dg, with_labels=False, **options)
+    plt.show()
+
+
 if __name__ == '__main__':
-    all_df = pd.read_csv('../datasets/tweets/out_3143.csv', delimiter=',', header=0, index_col=0).drop(columns=['url', 'quoted_url'])
-    all_df = all_df[all_df['lang'] == 'en']
-    all_df = all_df.dropna(how='any', subset=['hashtag']).drop(columns=['lang'])
-    all_df['is_retweet'].astype("bool")
-    all_df['is_quote'].astype("bool")
-    all_df = all_df[all_df['is_retweet'] & (all_df['is_quote'] != True)]
+    # all_df = pd.read_csv('../data_cleaned/tweets/out_3143.csv', delimiter=',', header=0, index_col=0).drop(columns=['url', 'quoted_url'])
+    # all_df = all_df[all_df['lang'] == 'en']
+    # all_df = all_df.dropna(how='any', subset=['hashtag']).drop(columns=['lang'])
+    # all_df['is_retweet'].astype("bool")
+    # all_df['is_quote'].astype("bool")
+    # all_df['hashtag'].astype("string")
+    # all_df['hashtag'] = all_df['hashtag'].map(lambda x: clean_list(x))
+    # all_df['mentions'].astype("string")
+    # all_df['mentions'] = all_df['mentions'].map(lambda x: clean_list(x))
+    all_df = pd.read_pickle('all_df.pkl')
+    all_df = all_df[(all_df['is_quote'] != True) & (all_df['is_retweet'] != True) & (all_df['mentions'] != '') & (all_df['user'] != '')]
+    build_mention_graph(all_df)
     display(all_df)
