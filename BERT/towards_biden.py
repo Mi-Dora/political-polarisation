@@ -20,8 +20,8 @@ id2label = {
 
 sentences = ['This pandemic has shown us clearly the vulgarity of our healthcare system. Highest costs in the world, yet not enough nurses or doctors. Many millions uninsured, while insurance company profits soar. The struggle continues. Healthcare is a human right. Medicare for all.', 'This pandemic has shown us clearly the vulgarity of our healthcare system. Highest costs in the world, yet not enough nurses or doctors. Many millions uninsured, while insurance company profits soar. The struggle continues. Healthcare is a human right. Medicare for all.']
 inputs = tokenizer([s.lower() for s in sentences], return_tensors="pt")
-outputs = model(**inputs)
-predicted_probability = torch.softmax(outputs[0], dim=1)[0].tolist()
+outputs = model(**inputs).get('logits')
+predicted_probability = torch.softmax(outputs, dim=1).tolist()
 print('predicted_probability: ', predicted_probability)
 
 
