@@ -10,7 +10,9 @@ from multiprocessing import Process
 from langdetect import detect, detect_langs, DetectorFactory, lang_detect_exception
 
 
-df = pd.read_pickle('../data_cleaned/tweets/out_3143.pkl')
+df = pd.read_csv('../data_cleaned/tweets/out_3143_hash.csv')
 pass
+# df = pd.read_pickle('../data_cleaned/tweets/out_3143_hash.pkl')
+# df.to_csv('../data_cleaned/tweets/out_3143_hash1.csv')
 
 

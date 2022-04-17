@@ -113,11 +113,11 @@ def text_handle(df):
     df['mentions'] = df['mentions'].progress_map(lambda x: set(x))
 
     # hashtag
-    df['hashtag'] = df['text'].progress_map(find_hashtag)
-    df['text'] = df['text'].progress_map(rm_hashtag)
-    df['hashtag'] += df['quoted_text'].progress_map(find_hashtag)
-    df['quoted_text'] = df['quoted_text'].progress_map(rm_hashtag)
-    df['hashtag'] = df['hashtag'].progress_map(lambda x: set(x))
+    # df['hashtag'] = df['text'].progress_map(find_hashtag)
+    # df['text'] = df['text'].progress_map(rm_hashtag)
+    # df['hashtag'] += df['quoted_text'].progress_map(find_hashtag)
+    # df['quoted_text'] = df['quoted_text'].progress_map(rm_hashtag)
+    # df['hashtag'] = df['hashtag'].progress_map(lambda x: set(x))
 
     # remove non-English
 
@@ -134,16 +134,16 @@ def clean(_tweets_fs, save_path, tid):
         df.fillna(value=fill_col, inplace=True)
         df['original_tweet_id'] = pd.to_numeric(df['original_tweet_id'], downcast='integer')  # float64 to int64
         text_handle(df)
-        df.to_pickle(os.path.join(save_path, os.path.basename(tweets_f).split('.')[0]+'.pkl'))
+        df.to_csv(os.path.join(save_path, os.path.basename(tweets_f).split('.')[0]+'_hash.csv'))
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--tweets_dir', type=str, default='../data/tweets/',
+    parser.add_argument('--tweets_dir', type=str, default='../data/tmp/',
                         help='Path to load tweet dataset')
     parser.add_argument('--save_path', type=str, default='../data_cleaned/tweets',
                         help='Path to save the cleaned dataset')
-    parser.add_argument('--num_threads', type=int, default=4,
+    parser.add_argument('--num_threads', type=int, default=1,
                         help='Numb er of thread using for downloading.')
     args = parser.parse_args()
     save_path = args.save_path
@@ -153,6 +153,8 @@ if __name__ == '__main__':
     tweets_fs = []
     for root, _, files in os.walk(tweets_dir):
         for file in sorted(files):
+            if file[0] == '.':
+                continue
             tweets_fs.append(os.path.join(root, file))
     thread_handle = []
     base = len(tweets_fs)//num_threads
