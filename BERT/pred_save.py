@@ -6,6 +6,7 @@ import pandas as pd
 from pandas.core.frame import DataFrame
 from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
+import os
 
 id2label_biden = {
     0: "Against Biden",
@@ -40,8 +41,9 @@ def save(pred_biden, pred_trump, file):
     df_trump = DataFrame(pred_trump, columns=["Against Trump","Favor Trump","None Trump"])
     df = pd.concat([df,df_biden,df_trump], axis=1)
     
-    df_existed = pd.read_csv(base_url+filename)
-    df = pd.concat([df_existed, df], ignore_index=True)
+    if os.path.exists(base_url+filename):
+        df_existed = pd.read_csv(base_url+filename)
+        df = pd.concat([df_existed, df], ignore_index=True)
     df.to_csv(base_url+filename)
 
 def predict(files, device):
