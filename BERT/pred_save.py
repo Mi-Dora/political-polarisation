@@ -37,11 +37,12 @@ def save(o_sentences, pred_biden, pred_trump, file):
 
     df_biden = DataFrame(pred_biden, columns=["Against Biden","Favor Biden","None Biden"])
     df_trump = DataFrame(pred_trump, columns=["Against Trump","Favor Trump","None Trump"])
-    df = pd.concat([DataFrame({'text': o_sentences}),df_biden,df_trump], axis=1)
+    df = pd.concat([DataFrame(o_sentences),df_biden,df_trump], axis=1, sort=False)
+    df.columns=["Text","Against Biden","Favor Biden","None Biden","Against Trump","Favor Trump","None Trump"]
     
     if os.path.exists(base_url+filename):
         df_existed = pd.read_csv(base_url+filename)
-        df = pd.concat([df_existed, df], ignore_index=True)
+        df = pd.concat([df_existed, df], ignore_index=True, sort=False)
     df.to_csv(base_url+filename)
 
 def predict(files, device):
