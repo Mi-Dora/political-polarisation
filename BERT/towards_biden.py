@@ -24,6 +24,6 @@ inputs = tokenizer(sentence.lower(), return_tensors="pt")
 outputs = model(**inputs)
 predicted_probability = torch.softmax(outputs[0], dim=1)[0].tolist()
 
-classifier = pipeline('sentiment-analysis')
+classifier = pipeline('sentiment-analysis', model=pretrained_LM_path, tokenizer=pretrained_LM_path)
 result = classifier(sentence)
 print('result', result)
