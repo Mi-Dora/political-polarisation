@@ -8,6 +8,7 @@ id2label = {
     2: "NONE Trump"
 }
 
+# TODO load the data
 def main(paths):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     pretrained_LM_path = "kornosk/bert-election2020-twitter-stance-trump-KE-MLM"
@@ -20,7 +21,8 @@ def main(paths):
     inputs = tokenizer([s.lower() for s in sentences], return_tensors="pt").to(device)
     outputs = model(**inputs).get('logits')
     predicted_probability = torch.softmax(outputs, dim=1).tolist()
-    print('predicted_probability: ', predicted_probability)
+    
+    return predicted_probability
 
 
 # use pipline easily to implement

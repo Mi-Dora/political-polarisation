@@ -8,8 +8,8 @@ id2label = {
     2: "NONE Biden"
 }
 
-def predict(paths):
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# TODO load the data
+def predict(paths, device):
     pretrained_LM_path = "kornosk/bert-election2020-twitter-stance-biden-KE-MLM"
 
     tokenizer = AutoTokenizer.from_pretrained(pretrained_LM_path)
@@ -20,7 +20,8 @@ def predict(paths):
     inputs = tokenizer([s.lower() for s in sentences], return_tensors="pt").to(device)
     outputs = model(**inputs).get('logits')
     predicted_probability = torch.softmax(outputs, dim=1).tolist()
-    print('predicted_probability: ', predicted_probability)
+
+    return predicted_probability
 
 predict([])
 
