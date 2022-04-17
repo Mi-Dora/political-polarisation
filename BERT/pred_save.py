@@ -14,13 +14,14 @@ id2label_trump = {
     2: "None Trump"
 }
 
-def save(sentences, pred_biden, pred_trump, file):
-    # TODO save the result
+def save(pred_biden, pred_trump, file):
+    sentences = pd.read_csv(file).tolist()
+
     filename = file.split('/')[-1]
     base_url = './BERT/result/'
     result = []
     for i, text in enumerate(sentences):
-        result.append([text] + pred_biden[i] + pred_trump[i])
+        result.append(text + pred_biden[i] + pred_trump[i])
     name=['text',"Against Biden","Favor Biden","None Biden","Against Trump","Favor Trump","None Trump"]
     df = pd.DataFrame(columns=name,data=result)#数据有三列，列名分别为one,two,three
     df.to_csv(base_url+filename)
@@ -46,7 +47,7 @@ def predict(files, device):
         outputs = model_trump(**inputs).get('logits')
         pred_trump = torch.softmax(outputs, dim=1).detach().cpu().tolist()
 
-        save(sentences, pred_biden, pred_trump, file)
+        save(pred_biden, pred_trump, file)
 
 # use pipline easily to implement
 # classifier = pipeline('sentiment-analysis', model=model, tokenizer=tokenizer)
