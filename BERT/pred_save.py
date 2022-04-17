@@ -25,27 +25,26 @@ class MyDataSet(Dataset):
         sentences = pd.read_csv(file)['text'].tolist()
         sentences = [s.lower() for s in sentences]
         self.sentence_list = sentences
- 
+        user = pd.read_csv(file)['user'].tolist()
+        self.user_list = user
+
     def __getitem__(self, index):
-        return self.sentence_list[index]
+        return self.user_list[index], self.sentence_list[index]
  
     def __len__(self):
         return len(self.sentence_list)
 
-def save(pred_biden, pred_trump, file):
+def save(users, pred_biden, pred_trump, file):
     filename = file.split('/')[-1]
     base_url = './BERT/result/'
 
-    df = pd.read_csv(file)
     df_biden = DataFrame(pred_biden, columns=["Against Biden","Favor Biden","None Biden"])
     df_trump = DataFrame(pred_trump, columns=["Against Trump","Favor Trump","None Trump"])
-    df = pd.concat([df,df_biden,df_trump], axis=1)
-    print('new data: ', df.head())
+    df = pd.concat([DataFrame({'user': users}),df_biden,df_trump], axis=1)
     
     if os.path.exists(base_url+filename):
         df_existed = pd.read_csv(base_url+filename)
         df = pd.concat([df_existed, df], ignore_index=True)
-    print('all data: ', df.head())
     df.to_csv(base_url+filename)
 
 def predict(files, device):
@@ -63,7 +62,7 @@ def predict(files, device):
     for file in files:
         dataset = MyDataSet(file)
         dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
-        for sentences in tqdm(dataloader):
+        for users, sentences in tqdm(dataloader):
             inputs = tokenizer_biden(sentences, return_tensors="pt",padding='max_length',truncation=True,max_length=max_len).to(device)
             outputs = model_biden(**inputs).get('logits')
             pred_biden = torch.softmax(outputs, dim=1).detach().cpu().tolist()
@@ -72,7 +71,7 @@ def predict(files, device):
             outputs = model_trump(**inputs).get('logits')
             pred_trump = torch.softmax(outputs, dim=1).detach().cpu().tolist()
 
-            save(pred_biden, pred_trump, file)
+            save(users, pred_biden, pred_trump, file)
 
 # use pipline easily to implement
 # classifier = pipeline('sentiment-analysis', model=model, tokenizer=tokenizer)
