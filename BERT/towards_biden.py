@@ -1,4 +1,3 @@
-import re
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
 import torch
 import numpy as np
@@ -14,19 +13,21 @@ tokenizer = AutoTokenizer.from_pretrained(pretrained_LM_path)
 model = AutoModelForSequenceClassification.from_pretrained(pretrained_LM_path)
 
 id2label = {
-    0: "AGAINST",
-    1: "FAVOR",
-    2: "NONE"
+    0: "Against Biden",
+    1: "Favor Biden",
+    2: "NONE Biden"
 }
 
-sentence = 'This pandemic has shown us clearly the vulgarity of our healthcare system. Highest costs in the world, yet not enough nurses or doctors. Many millions uninsured, while insurance company profits soar. The struggle continues. Healthcare is a human right. Medicare for all.'
-inputs = tokenizer(sentence.lower(), return_tensors="pt")
-print('inputs: ', inputs)
+sentences = ['This pandemic has shown us clearly the vulgarity of our healthcare system. Highest costs in the world, yet not enough nurses or doctors. Many millions uninsured, while insurance company profits soar. The struggle continues. Healthcare is a human right. Medicare for all.', 'This pandemic has shown us clearly the vulgarity of our healthcare system. Highest costs in the world, yet not enough nurses or doctors. Many millions uninsured, while insurance company profits soar. The struggle continues. Healthcare is a human right. Medicare for all.']
+inputs = tokenizer([s.lower() for s in sentences], return_tensors="pt")
 outputs = model(**inputs)
-print('outputs: ', outputs)
 predicted_probability = torch.softmax(outputs[0], dim=1)[0].tolist()
 print('predicted_probability: ', predicted_probability)
 
-classifier = pipeline('sentiment-analysis', model=model, tokenizer=tokenizer)
-result = classifier(sentence)
-print('result', result)
+
+# print("Prediction:", id2label[np.argmax(predicted_probability)])
+
+# use pipline easily to implement
+# classifier = pipeline('sentiment-analysis', model=model, tokenizer=tokenizer)
+# result = classifier(sentence)
+# print('result', result)
