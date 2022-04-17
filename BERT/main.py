@@ -15,13 +15,13 @@ if __name__ == '__main__':
     parser.add_argument('--paths', default='all', help='paths')
     parser.add_argument('--url', default='../data_cleaned/tweets/', help='base url')
     args = parser.parse_args()
-
+    files = []
     base_url = args.url
     if args.paths == 'all':
-        for root,dirs,files in os.walk(base_url):
-            paths = files
+        for root,dirs,fs in os.walk(base_url):
+            files = fs
     else :
         paths = args.paths.split(',')
-        paths = [base_url+'out_'+path+'pkl' for path in paths]
+        files = [base_url+'out_'+path+'pkl' for path in paths]
 
-    pred_save.predict(paths, device)
+    pred_save.predict(files, device)
