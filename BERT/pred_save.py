@@ -23,7 +23,6 @@ class MyDataSet(Dataset):
     def __init__(self, file):
         sentences = pd.read_csv(file)['text'].tolist()
         sentences = [s.lower() for s in sentences]
-
         self.sentence_list = sentences
  
     def __getitem__(self, index):
@@ -36,7 +35,7 @@ def save(pred_biden, pred_trump, file):
     filename = file.split('/')[-1]
     base_url = './BERT/result/'
 
-    df = pd.read_csv(file).tolist()
+    df = pd.read_csv(file)
     df_biden = DataFrame(pred_biden, columns=["Against Biden","Favor Biden","None Biden"])
     df_trump = DataFrame(pred_trump, columns=["Against Trump","Favor Trump","None Trump"])
     df = pd.concat([df,df_biden,df_trump], axis=1)
