@@ -1,6 +1,7 @@
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
 import torch
 import pandas as pd
+from pandas.core.frame import DataFrame
 
 id2label_biden = {
     0: "Against Biden",
@@ -15,15 +16,13 @@ id2label_trump = {
 }
 
 def save(pred_biden, pred_trump, file):
-    sentences = pd.read_csv(file).tolist()
-
     filename = file.split('/')[-1]
     base_url = './BERT/result/'
-    result = []
-    for i, text in enumerate(sentences):
-        result.append(text + pred_biden[i] + pred_trump[i])
-    name=['text',"Against Biden","Favor Biden","None Biden","Against Trump","Favor Trump","None Trump"]
-    df = pd.DataFrame(columns=name,data=result)#数据有三列，列名分别为one,two,three
+
+    df = pd.read_csv(file).tolist()
+    df_biden = DataFrame(pred_biden, columns=["Against Biden","Favor Biden","None Biden"])
+    df_trump = DataFrame(pred_trump, columns=["Against Trump","Favor Trump","None Trump"])
+    df = pd.concat([df,df_biden,df_trump], axis=1)
     df.to_csv(base_url+filename)
 
 def predict(files, device):
