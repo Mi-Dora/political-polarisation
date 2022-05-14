@@ -10,7 +10,10 @@ from multiprocessing import Process
 from langdetect import detect, detect_langs, DetectorFactory, lang_detect_exception
 
 
-df = pd.read_csv('../data_cleaned/tweets/out_3143_hash.csv')
+df_tweets = pd.read_csv('../data_cleaned/tweets/hash/out_3143_hash.csv', on_bad_lines='skip', index_col=0)
+df_users = pd.read_csv('../data_cleaned/users/out_3143.csv', on_bad_lines='skip', index_col=0)
+df_retweets = pd.read_csv('../data/retweets//out_3143.csv', on_bad_lines='skip', index_col=0)
+
 pass
 # df = pd.read_pickle('../data_cleaned/tweets/out_3143_hash.pkl')
 # df.to_csv('../data_cleaned/tweets/out_3143_hash1.csv')

@@ -3,6 +3,7 @@ import numpy as np
 import os
 import re
 import argparse
+import time
 import math
 from tqdm import tqdm
 from emoji import demojize
@@ -139,11 +140,11 @@ def clean(_tweets_fs, save_path, tid):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--tweets_dir', type=str, default='../data/tmp/',
+    parser.add_argument('--tweets_dir', type=str, default='../data/tweets/',
                         help='Path to load tweet dataset')
     parser.add_argument('--save_path', type=str, default='../data_cleaned/tweets',
                         help='Path to save the cleaned dataset')
-    parser.add_argument('--num_threads', type=int, default=1,
+    parser.add_argument('--num_threads', type=int, default=4,
                         help='Numb er of thread using for downloading.')
     args = parser.parse_args()
     save_path = args.save_path
@@ -169,10 +170,11 @@ if __name__ == '__main__':
         start += num_csv_per_thread
         print('Thread %d is starting' % i)
         thread_handle[i].start()
+    start = time.time()
     for i in range(num_threads):
         print('Thread %d is running' % i)
         thread_handle[i].join()
-
+    print("Time cost for {} files using {} threads is {}".format(len(tweets_fs), num_threads, time.time()-start))
 
 
 
