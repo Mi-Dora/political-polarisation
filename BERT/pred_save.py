@@ -40,7 +40,7 @@ def save(o_sentences, pred_biden, pred_trump, file):
     df = pd.concat([DataFrame(o_sentences, columns=["Text"]),df_biden,df_trump], axis=1, sort=False)
     
     if os.path.exists(base_url+filename):
-        df_existed = pd.read_csv(base_url+filename,index_col=0,lineterminator="\n")
+        df_existed = pd.read_csv(base_url+filename,index_col=0)
         df = pd.concat([df_existed, df], ignore_index=True, sort=False)
     df.to_csv(base_url+filename)
 
