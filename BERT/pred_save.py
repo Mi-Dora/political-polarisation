@@ -31,19 +31,6 @@ class MyDataSet(Dataset):
     def __len__(self):
         return len(self.sentence_list)
 
-def save(o_sentences, pred_biden, pred_trump, file):
-    filename = file.split('/')[-1]
-    base_url = './BERT/result/'
-
-    df_biden = DataFrame(pred_biden, columns=["Against Biden","Favor Biden","None Biden"])
-    df_trump = DataFrame(pred_trump, columns=["Against Trump","Favor Trump","None Trump"])
-    df = pd.concat([DataFrame(o_sentences, columns=["Text"]),df_biden,df_trump], axis=1, sort=False)
-    
-    if os.path.exists(base_url+filename):
-        df_existed = pd.read_csv(base_url+filename,index_col=0)
-        df = pd.concat([df_existed, df], ignore_index=True, sort=False)
-    df.to_csv(base_url+filename)
-
 def predict(files, device):
     max_len = 128
     batch_size=128
@@ -55,10 +42,14 @@ def predict(files, device):
     pretrained_LM_path_trump = "kornosk/bert-election2020-twitter-stance-trump-KE-MLM"
     tokenizer_trump = AutoTokenizer.from_pretrained(pretrained_LM_path_trump)
     model_trump = AutoModelForSequenceClassification.from_pretrained(pretrained_LM_path_trump).to(device)
+    base_url = './BERT/result/'
     
     for file in files:
         dataset = MyDataSet(file)
         dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
+        preds_biden = []
+        preds_trump = []
+        filename = file.split('/')[-1]
         for o_sentences in tqdm(dataloader):
             sentences = [s.lower() for s in o_sentences]
             inputs = tokenizer_biden(sentences, return_tensors="pt",padding='max_length',truncation=True,max_length=max_len).to(device)
@@ -69,9 +60,28 @@ def predict(files, device):
             outputs = model_trump(**inputs).get('logits')
             pred_trump = torch.softmax(outputs, dim=1).detach().cpu().tolist()
 
-            save(o_sentences, pred_biden, pred_trump, file)
+            preds_biden.append(pred_biden)
+            preds_trump.append(pred_trump)
 
-# use pipline easily to implement
-# classifier = pipeline('sentiment-analysis', model=model, tokenizer=tokenizer)
-# result = classifier(sentence)
-# print('result', result)
+        df = pd.read_csv(file)
+        df_biden = DataFrame(pred_biden, columns=["Against Biden","Favor Biden","None Biden"])
+        df_trump = DataFrame(pred_trump, columns=["Against Trump","Favor Trump","None Trump"])
+        df_res = pd.concat([df,df_biden,df_trump], axis=1, sort=False)
+
+        df_res.to_csv(base_url+filename)
+
+
+# def pred2(files, device):
+#     # use pipline easily to implement
+#     pretrained_LM_path_biden = "kornosk/bert-election2020-twitter-stance-biden-KE-MLM"
+#     pretrained_LM_path_trump = "kornosk/bert-election2020-twitter-stance-trump-KE-MLM"
+#     tokenizer_biden = AutoTokenizer.from_pretrained(pretrained_LM_path_biden)
+#     # tokenizer_trump = AutoTokenizer.from_pretrained(pretrained_LM_path_trump)
+
+
+#     classifier_biden = pipeline('sentiment-analysis', model=pretrained_LM_path_biden, tokenizer=tokenizer_biden)
+#     # classifier_trmp = pipeline('sentiment-analysis', model=pretrained_LM_path_trump, tokenizer=tokenizer_trump)
+#     result = classifier_biden(" We're all going to get crack and $$$ from China and the Ukraine just like his own family!!!!  Vote !!!!!")
+#     print('result', result)
+
+# pred2(1, 2)
