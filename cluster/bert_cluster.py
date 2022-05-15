@@ -3,11 +3,6 @@ import re
 import string
 
 import pandas as pd
-from gensim.parsing.preprocessing import STOPWORDS
-from nltk import word_tokenize, WordNetLemmatizer
-
-stopwords = set(STOPWORDS)
-lemmatizer = WordNetLemmatizer()
 
 
 def read_dir_file(rootdir):
@@ -30,13 +25,11 @@ def clean_list(x):
         x = re.sub(r'&\S+', ' ', x)
         x = x.replace('_', ' ').replace(':', ' ')
         # cleaning up text
-        # x = re.sub(r'\'\w+', '', x)
-        # x = re.sub(r'\w*\d+\w*', '', x)
-        # x = re.sub(r'\s{2,}', ' ', x)
-        # x = re.sub(r'\s[^\w\s]\s', '', x)
-        # Heavy
-        x = ' '.join([word for word in x.split(' ') if word and len(word) > 0])
-        x = re.sub(r'[^a-z0-9\s]', "", x, 0)
+        x = re.sub(r'\'\w+', '', x)
+        x = re.sub(r'\w*\d+\w*', '', x)
+        x = re.sub(r'\s{2,}', ' ', x)
+        x = re.sub(r'\s[^\w\s]\s', '', x)
+        x = re.sub(r'[^a-z\s]', "", x, 0)
         x = x.strip()
     return x
 
@@ -66,5 +59,5 @@ def train():
 
 
 if __name__ == '__main__':
-    # read_dir_file('../data_cleaned/hash')
+    read_dir_file('../../hash')
     train()

@@ -74,13 +74,18 @@ def build_mention_graph(df):
     largest_component = max(nx.connected_components(dg), key=len)
     largest_component_graph = dg.subgraph(largest_component)
     print(nx.number_of_nodes(largest_component_graph))
-    communities = nx.community.label_propagation_communities(largest_component_graph)
-    communities = sorted(communities, key=lambda i: len(i), reverse=True)
-    for community in communities[10:]:
-        for item in community:
-            dg.remove_node(item)
-    nx.draw(dg, with_labels=False, **options)
-    plt.show()
+    biparties = nx.community.kernighan_lin_bisection(largest_component_graph, max_iter=100,)
+    print(len(biparties))
+    label_communities = nx.community.label_propagation_communities(largest_component_graph)
+    label_communities = sorted(label_communities, key=lambda i: len(i), reverse=True)
+    print(len(label_communities))
+    # for community in communities[10:]:
+    #     for item in community:
+    #         dg.remove_node(item)
+    # nx.draw(dg, with_labels=False, **options)
+    # plt.show()
+    greedy_communities = nx.algorithms.community.greedy_modularity_communities(largest_component_graph, n_communities=3)
+    print(len(greedy_communities))
 
 
 if __name__ == '__main__':
