@@ -42,10 +42,10 @@ def clean_csv(filename):
     candidate_df['quoted_text'].astype("string")
     candidate_df['text'] = candidate_df['text'].map(lambda x: clean_list(x))
     candidate_df['quoted_text'] = candidate_df['quoted_text'].map(lambda x: clean_list(x))
-    text = '\n'.join([item for item in candidate_df['text'].tolist() if item and len(item) > 3])
+    text = '\n'.join([item for item in candidate_df['text'].tolist() if item and len(item) > 30])
     with open('tweet.txt', 'a', encoding="utf-8") as fp:
         fp.write(text)
-    text = '\n'.join([item for item in candidate_df['quoted_text'].tolist() if item and len(item) > 10])
+    text = '\n'.join([item for item in candidate_df['quoted_text'].tolist() if item and len(item) > 30])
     with open('tweet.txt', 'a', encoding="utf-8") as fp:
         fp.write(text)
 
@@ -59,5 +59,5 @@ def train():
 
 
 if __name__ == '__main__':
-    read_dir_file('../../hash')
+    read_dir_file('../data_cleaned/hash/select')
     train()
