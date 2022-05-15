@@ -97,7 +97,7 @@ def text_handle(df):
 
     # handle emoji
     df['text'] = df['text'].progress_map(de_emoji)
-    df['quoted_text'] = df['quoted_text'].map(de_emoji)
+    df['quoted_text'] = df['quoted_text'].progress_map(de_emoji)
 
     # handle url
     df['url'] = df['text'].progress_map(find_url)

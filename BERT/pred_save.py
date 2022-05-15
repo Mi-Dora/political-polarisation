@@ -51,21 +51,20 @@ def predict(files, device):
         preds_trump = []
         filename = file.split('/')[-1]
         for o_sentences in tqdm(dataloader):
-            sentences = [s.lower() for s in o_sentences]
-            inputs = tokenizer_biden(sentences, return_tensors="pt",padding='max_length',truncation=True,max_length=max_len).to(device)
+            inputs = tokenizer_biden(o_sentences, return_tensors="pt",padding='max_length',truncation=True,max_length=max_len).to(device)
             outputs = model_biden(**inputs).get('logits')
             pred_biden = torch.softmax(outputs, dim=1).detach().cpu().tolist()
-
-            inputs = tokenizer_trump(sentences, return_tensors="pt",padding='max_length',truncation=True,max_length=max_len).to(device)
+            
+            inputs = tokenizer_trump(o_sentences, return_tensors="pt",padding='max_length',truncation=True,max_length=max_len).to(device)
             outputs = model_trump(**inputs).get('logits')
             pred_trump = torch.softmax(outputs, dim=1).detach().cpu().tolist()
 
-            preds_biden.append(pred_biden)
-            preds_trump.append(pred_trump)
+            preds_biden += pred_biden
+            preds_trump += pred_trump
 
         df = pd.read_csv(file)
-        df_biden = DataFrame(pred_biden, columns=["Against Biden","Favor Biden","None Biden"])
-        df_trump = DataFrame(pred_trump, columns=["Against Trump","Favor Trump","None Trump"])
+        df_biden = DataFrame(preds_biden, columns=["Against Biden","Favor Biden","None Biden"])
+        df_trump = DataFrame(preds_trump, columns=["Against Trump","Favor Trump","None Trump"])
         df_res = pd.concat([df,df_biden,df_trump], axis=1, sort=False)
 
         df_res.to_csv(base_url+filename)
