@@ -14,6 +14,7 @@ df_tweets = pd.read_csv('../data_cleaned/tweets/hash/out_3143_hash.csv', on_bad_
 df_users = pd.read_csv('../data_cleaned/users/out_3143.csv', on_bad_lines='skip', index_col=0)
 df_retweets = pd.read_csv('../data/retweets//out_3143.csv', on_bad_lines='skip', index_col=0)
 df_ori_tweets = pd.read_csv('../data/tweets//out_3143.csv', on_bad_lines='skip', index_col=0)
+df_user_feature = pd.read_csv('../data_cleaned/user_feature/out_3143_hash_user_feature.csv', on_bad_lines='skip', index_col=0)
 
 pass
 # df = pd.read_pickle('../data_cleaned/tweets/out_3143_hash.pkl')
